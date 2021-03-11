@@ -15,6 +15,7 @@ def init_vendors(app):
     assets.init_app(app)
     compile_assets(assets)
     db.init_app(app)
+    db.create_all()
     Mail(app)
 
 

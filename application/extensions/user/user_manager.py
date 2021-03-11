@@ -1,14 +1,13 @@
 from flask_login import LoginManager
 from flask import Blueprint
+from application.database import db
 from .models import User
 from .user_manager__settings import UserManager__Settings
 from .user_manager__views import UserManager__Views
-from .user_manager__cli import UserManager__Cli
 from .user_manager__utils import UserManager__Utils
 
 class UserManager(UserManager__Settings,
         UserManager__Views,
-        UserManager__Cli,
         UserManager__Utils):
 
     def __init__(self, app=None):
@@ -29,13 +28,14 @@ class UserManager(UserManager__Settings,
                 'user_bp',
                 __name__,
                 template_folder='templates',
-                static_folder='static',
-                url_prefix='/user',)
+                static_folder='static',)
 
         app.register_blueprint(blueprint)
 
         self._add_url_routes(app)
-        self._add_cli_commands(app)
+
+        from .cli import user_cli
+        app.cli.add_command(user_cli)
 
     def deactivate_user(self, user):
         pass
@@ -56,11 +56,10 @@ class UserManager(UserManager__Settings,
         users = User.query.all()
         return users
 
-    def add_user(self, new_user, password):
+    def add_user(user_model):
         from sqlalchemy.exc import IntegrityError
-        new_user.set_password(password)
         try:
-            new_user = db.session.add(new_user)
+            new_user = db.session.add(user_model)
             db.session.commit()
         except IntegrityError as err:
             db.session.rollback()
@@ -78,7 +77,7 @@ class UserManager(UserManager__Settings,
         return None
 
 
-    def _add_url_routes(self, user_bp):
+    def _add_url_routes(self, app):
 
         def test_stub():
             return self.test_view()
@@ -94,8 +93,8 @@ class UserManager(UserManager__Settings,
             return self.register_view()
 
 
-        user_bp.add_url_rule(self.USER_TEST_URL, 'user_bp.test', test_stub, methods=['GET', 'POST'])
-        user_bp.add_url_rule(self.USER_REGISTER_URL, 'user_bp.register', register_stub, methods=['GET', 'POST'])
-        user_bp.add_url_rule(self.USER_LOGOUT_URL, 'user_bp.logout', logout_stub, methods=['GET', 'POST'])
-        user_bp.add_url_rule(self.USER_LOGIN_URL, 'user_bp.login', login_stub, methods=['GET', 'POST'])
+        app.add_url_rule(self.USER_TEST_URL, 'user_bp.test', test_stub, methods=['GET', 'POST'])
+        app.add_url_rule(self.USER_REGISTER_URL, 'user_bp.register', register_stub, methods=['GET', 'POST'])
+        app.add_url_rule(self.USER_LOGOUT_URL, 'user_bp.logout', logout_stub, methods=['GET', 'POST'])
+        app.add_url_rule(self.USER_LOGIN_URL, 'user_bp.login', login_stub, methods=['GET', 'POST'])
 

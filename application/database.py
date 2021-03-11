@@ -33,11 +33,11 @@ class UUID(types.TypeDecorator):
             return uuid.UUID(value)
 
 
-@dataclass
+#j@dataclass
 class Base(db.Model):
-    uuid:str
-    created:datetime
-    updated:datetime
+#    uuid:str
+#    created:datetime
+#    updated:datetime
     __table_args__ = {'extend_existing': True}
     __abstract__ = True
     uuid = db.Column(

@@ -1,53 +1,74 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
-from application.database import db, Base
-
+from application.database import db, Base, UUID
+from datetime import datetime
+import uuid as uuid_ext
 
 user_role_assoc = db.Table('na_user_role_assoc',
         db.Column('id', db.Integer(), primary_key=True),
         db.Column('user_uuid', db.ForeignKey('na_user.uuid')),
-        db.Column('role_uuid', db.ForeignKey('na_user_role.uuid')))
+        db.Column('role_uuid', db.ForeignKey('na_user_role.uuid')),
+        extend_existing=True)
 
-role_hierachy_assoc = db.Table('na_user_role_hierachy',
+role_hierachy_assoc = db.Table('na_user_role_hierachy_assoc',
         db.Column('id', db.Integer(), primary_key=True),
-        db.Column('parent_role_uuid', db.ForeignKey('na_user_role.uuid')),
-        db.Column('child_role_uuid', db.ForeignKey('na_user_role.uuid')))
+        db.Column('parent_role_uuid', UUID, db.ForeignKey('na_user_role.uuid'),
+            primary_key=True),
+        db.Column('child_role_uuid', UUID, db.ForeignKey('na_user_role.uuid'),
+            primary_key=True),
+        extend_existing=True)
 
 role_ability_assoc = db.Table('na_user_role_ability_assoc',
         db.Column('id', db.Integer(), primary_key=True),
         db.Column('role_uuid', db.ForeignKey('na_user_role.uuid')),
-        db.Column('ability_uuid', db.ForeignKey('na_user_role_ability.uuid')))
+        db.Column('ability_uuid', db.ForeignKey('na_user_role_ability.uuid')),
+        extend_existing=True)
 
 
-class Ability(Base):
+class Ability(db.Model):
     __tablename__ = 'na_user_role_ability'
-    name:str
+    __table_args__ = {'extend_existing': True}
+    uuid = db.Column(
+            UUID(),
+            primary_key=True,
+            default=uuid_ext.uuid4)
     name = db.Column(db.String(120), unique=True)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    updated = db.Column(db.DateTime,
+            default=datetime.utcnow,
+            onupdate=datetime.utcnow)
 
     def __init__(self, name):
         self.name = name.lower()
 
 
-class Role(Base):
+class Role(db.Model):
     __tablename__ = 'na_user_role'
-    name:str
-    description:str
-    abilities:str
+    __table_args__ = {'extend_existing': True}
+    uuid = db.Column(
+            UUID(),
+            primary_key=True,
+            default=uuid_ext.uuid4)
     name = db.Column(db.String(255), unique=True)
     description = db.Column(db.String(255))
     child_roles = relationship(
-            'Hierachy',
+            'Role',
             secondary= role_hierachy_assoc,
-            primaryjoin='Role.uuid==role_hierachy_assoc.parent_role_uuid',
-            secondaryjoin='Role.uuid==role_hierachy_assoc.child_role_uuid',
+            primaryjoin=uuid==role_hierachy_assoc.c.parent_role_uuid,
+            secondaryjoin=uuid==role_hierachy_assoc.c.child_role_uuid,
             backref="parent_roles")
+
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    updated = db.Column(db.DateTime,
+            default=datetime.utcnow,
+            onupdate=datetime.utcnow)
 #    abilities = relationship(
 #            'Ability',
 #            secondary=role_ability_assoc,
 #            backref=db.backref('roles', lazy='dynamic'))
 
-    def __init__(self, name):
-        self.name = name.lower()
+#    def __init__(self, name):
+#        self.name = name.lower()
 
     def add_abilities(self, *abilities):
         for ability in abilities:
@@ -66,19 +87,13 @@ class Role(Base):
                 self.abilities.remove(existing_ability)
 
 
-
-
-class User(Base):
+class User(db.Model):
     __tablename__ = 'na_user'
-
-    def __init__(self, roles=None, default_role='user'):
-        if roles and isinstance(roles, str):
-            roles = [roles]
-        if roles and is_sequence(roles):
-            self.roles = roles
-        elif default_role:
-            self.roles = [default_role]
-
+    __table_args__ = {'extend_existing': True}
+    uuid = db.Column(
+            UUID(),
+            primary_key=True,
+            default=uuid_ext.uuid4)
     firstname = db.Column(db.String(255),index=True, nullable=False)
     secondname = db.Column(db.String(255), index=True, nullable=False)
     email = db.Column(db.String(255), index=True, unique=True, nullable=False)
@@ -95,6 +110,13 @@ class User(Base):
     active = db.Column(db.Boolean())
     roles = relationship('Role', secondary=user_role_assoc,
             backref=db.backref('users', lazy='dynamic'))
+    group_uuid = db.Column(UUID, db.ForeignKey('na_user_group.uuid'))
+    group = relationship('Group', back_populates='users')
+    group_admin = db.Column(db.Boolean, nullable=False, default=False)
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    updated = db.Column(db.DateTime,
+            default=datetime.utcnow,
+            onupdate=datetime.utcnow)
 
     def get_id(self):
         return self.uuid
@@ -109,30 +131,7 @@ class User(Base):
         return check_password_hash(self.password_hash, password)
 
     def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-#    def has_roles(self, *requirements):
-#        for requirement in requirements:
-#            if isinstance(requirement, (list, tuple)):
-#                tuple_of_role_names = requirement
-#                authorised = False
-#                for role_name in tuple_of_role_names:
-#                    if role_name in self.roles:
-#                        authorised = True
-#                        break
-#                    if not authorised:
-#                        return False
-#            else:
-#                role_name = requirement
-#                if not role_name in self.roles:
-#                    return False
-#        return True
-
-#    def has_ability(self, *abilites):
-#        pass
+        return self.active
 
     def add_roles(self, *roles):
         self.roles.extend([role for role in roles if role not in self.roles])
@@ -141,5 +140,18 @@ class User(Base):
         self.roles = [role for role in self.roles if role not in roles]
 
 
+class Group(db.Model):
+    __tablename__ = 'na_user_group'
+    __table_args__ = {'extend_existing': True}
+    uuid = db.Column(
+            UUID(),
+            primary_key=True,
+            default=uuid_ext.uuid4)
 
+    name = db.Column(db.String(255),index=True, nullable=False)
+    users = relationship('User', back_populates='group')
+    created = db.Column(db.DateTime, default=datetime.utcnow)
+    updated = db.Column(db.DateTime,
+            default=datetime.utcnow,
+            onupdate=datetime.utcnow)
 
