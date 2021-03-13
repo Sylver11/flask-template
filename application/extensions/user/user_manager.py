@@ -1,7 +1,7 @@
 from flask_login import LoginManager
 from flask import Blueprint
 from application.database import db
-from .models import User
+from .models import User, Group, Role
 from .user_manager__settings import UserManager__Settings
 from .user_manager__views import UserManager__Views
 from .user_manager__utils import UserManager__Utils
@@ -36,6 +36,25 @@ class UserManager(UserManager__Settings,
 
         from .cli import user_cli
         app.cli.add_command(user_cli)
+
+        @app.before_request
+        def check_user_db_defaults(self):
+            db.session.clear()
+            if self.USER_DEFAULT_GROUP_NAME:
+                name = self.USER_DEFAULT_GROUP_NAME
+                group = Group.query.filter_by(name).first()
+                if not group:
+                    group = Group(name=name)
+                    db.session.add(group)
+            if self.USER_DEFAULT_ROLE_NAME:
+                name = self.USER_DEFAULT_ROLE_NAME
+                role = Role.query.filter_by(name).first()
+                if not role:
+                    description = self.USER_DEFAULT_ROLE_DESCRIPTION
+                    role = Role(name=name, description=description)
+                    db.session.add(role)
+            db.session.commit()
+
 
     def deactivate_user(self, user):
         pass

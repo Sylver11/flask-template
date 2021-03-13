@@ -1,27 +1,49 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
-from application.database import db, Base, UUID
+from application.database import db, UUID
 from datetime import datetime
 import uuid as uuid_ext
 
 user_role_assoc = db.Table('na_user_role_assoc',
         db.Column('id', db.Integer(), primary_key=True),
-        db.Column('user_uuid', db.ForeignKey('na_user.uuid')),
-        db.Column('role_uuid', db.ForeignKey('na_user_role.uuid')),
+        db.Column(
+            'user_uuid',
+            UUID,
+            db.ForeignKey('na_user.uuid'),
+            primary_key=True),
+        db.Column(
+            'role_uuid',
+            UUID,
+            db.ForeignKey('na_user_role.uuid'),
+            primary_key=True),
         extend_existing=True)
 
 role_hierachy_assoc = db.Table('na_user_role_hierachy_assoc',
         db.Column('id', db.Integer(), primary_key=True),
-        db.Column('parent_role_uuid', UUID, db.ForeignKey('na_user_role.uuid'),
+        db.Column(
+            'parent_role_uuid',
+            UUID,
+            db.ForeignKey('na_user_role.uuid'),
             primary_key=True),
-        db.Column('child_role_uuid', UUID, db.ForeignKey('na_user_role.uuid'),
+        db.Column(
+            'child_role_uuid',
+            UUID,
+            db.ForeignKey('na_user_role.uuid'),
             primary_key=True),
         extend_existing=True)
 
 role_ability_assoc = db.Table('na_user_role_ability_assoc',
         db.Column('id', db.Integer(), primary_key=True),
-        db.Column('role_uuid', db.ForeignKey('na_user_role.uuid')),
-        db.Column('ability_uuid', db.ForeignKey('na_user_role_ability.uuid')),
+        db.Column(
+            'role_uuid',
+            UUID,
+            db.ForeignKey('na_user_role.uuid'),
+            primary_key=True),
+        db.Column(
+            'ability_uuid',
+            UUID,
+            db.ForeignKey('na_user_role_ability.uuid'),
+            primary_key=True),
         extend_existing=True)
 
 
@@ -38,8 +60,8 @@ class Ability(db.Model):
             default=datetime.utcnow,
             onupdate=datetime.utcnow)
 
-    def __init__(self, name):
-        self.name = name.lower()
+    #def __init__(self, name):
+    #    self.name = name.lower()
 
 
 class Role(db.Model):

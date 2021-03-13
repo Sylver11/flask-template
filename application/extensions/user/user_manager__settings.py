@@ -1,6 +1,9 @@
 class UserManager__Settings(object):
 
     USER_ENABLE_REGISTER = True
+    USER_DEFAULT_GROUP_NAME = 'default'
+    USER_DEFAULT_ROLE_NAME = 'user'
+    USER_DEFAULT_ROLE_DESCRIPTION = 'Normal User'
     USER_TEST_URL = '/test'
     USER_LOGIN_URL = '/login'
     USER_LOGOUT_URL = '/logout'
