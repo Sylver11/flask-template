@@ -1,6 +1,7 @@
 class UserManager__Settings(object):
 
     USER_ENABLE_REGISTER = True
+    USER_SET_DB_DEFAULTS = True
     USER_DEFAULT_GROUP_NAME = 'default'
     USER_DEFAULT_ROLE_NAME = 'user'
     USER_DEFAULT_ROLE_DESCRIPTION = 'Normal User'

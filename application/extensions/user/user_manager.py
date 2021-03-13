@@ -37,23 +37,22 @@ class UserManager(UserManager__Settings,
         from .cli import user_cli
         app.cli.add_command(user_cli)
 
-        @app.before_request
-        def check_user_db_defaults(self):
-            db.session.clear()
-            if self.USER_DEFAULT_GROUP_NAME:
-                name = self.USER_DEFAULT_GROUP_NAME
-                group = Group.query.filter_by(name).first()
+        if self.USER_SET_DB_DEFAULTS:
+            group_name = self.USER_DEFAULT_GROUP_NAME
+            role_name = self.USER_DEFAULT_ROLE_NAME
+            role_description = self.USER_DEFAULT_ROLE_DESCRIPTION
+
+            @app.before_request
+            def check_user_db_defaults():
+                group = Group.query.filter_by(name=group_name).first()
                 if not group:
-                    group = Group(name=name)
+                    group = Group(name=group_name)
                     db.session.add(group)
-            if self.USER_DEFAULT_ROLE_NAME:
-                name = self.USER_DEFAULT_ROLE_NAME
-                role = Role.query.filter_by(name).first()
+                role = Role.query.filter_by(name=role_name).first()
                 if not role:
-                    description = self.USER_DEFAULT_ROLE_DESCRIPTION
-                    role = Role(name=name, description=description)
+                    role = Role(name=role_name, description=role_description)
                     db.session.add(role)
-            db.session.commit()
+                db.session.commit()
 
 
     def deactivate_user(self, user):
@@ -75,15 +74,24 @@ class UserManager(UserManager__Settings,
         users = User.query.all()
         return users
 
-    def add_user(user_model):
+    def get_group_by_name(self, name):
+        group = Group.query.filter_by(name=name).first()
+        return group
+
+    def add_user(self, user_model):
         from sqlalchemy.exc import IntegrityError
+        name = self.USER_DEFAULT_GROUP_NAME
+        default_group = self.get_group_by_name(name)
+        if not default_group:
+            return 'No default group configured'
         try:
+            user_model.group = default_group
             new_user = db.session.add(user_model)
             db.session.commit()
         except IntegrityError as err:
             db.session.rollback()
             return 'User already exists'
-        return new_user
+        return user_model
 
     def update_user(self, user):
         user = db.session.merge(user)
