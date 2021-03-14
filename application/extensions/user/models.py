@@ -170,7 +170,7 @@ class Group(db.Model):
             primary_key=True,
             default=uuid_ext.uuid4)
 
-    name = db.Column(db.String(255),index=True, nullable=False)
+    name = db.Column(db.String(255),index=True, unique= True, nullable=False)
     users = relationship('User', back_populates='group')
     created = db.Column(db.DateTime, default=datetime.utcnow)
     updated = db.Column(db.DateTime,

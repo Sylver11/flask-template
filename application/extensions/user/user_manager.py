@@ -78,6 +78,16 @@ class UserManager(UserManager__Settings,
         group = Group.query.filter_by(name=name).first()
         return group
 
+    def user_part_of_default_group(self, user_model):
+        name = self.USER_DEFAULT_GROUP_NAME
+        default_group = self.get_group_by_name(name)
+        if not default_group:
+            return False
+        if default_group.uuid == user_model.group_uuid:
+            return True
+        return False
+
+
     def add_user(self, user_model):
         from sqlalchemy.exc import IntegrityError
         name = self.USER_DEFAULT_GROUP_NAME

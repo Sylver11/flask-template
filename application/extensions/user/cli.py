@@ -21,7 +21,8 @@ def add_group_cli(group_name, admin_user_email):
         click.echo('Group not created. Admin user does not exist.')
     if user.group_admin:
         click.echo('Group not created. User already admin of another group')
-    if user.group_uuid:
+    user_manager = UserManager()
+    if not user_manager.user_part_of_default_group(user):
         click.echo('Group not created. User already part of another group')
     group = db.session.add(Group(name=group_name))
     user.group_uuid = group.uuid
@@ -30,15 +31,7 @@ def add_group_cli(group_name, admin_user_email):
     click.echo('Group successfully created')
     return None
 
-@user_cli.command(
-        'add-user',
-        help='Create user by setting the following variables:\
-                    1. email\
-                    2. firstname\
-                    3. secondname\
-                    Example: email:connectmaeuse@gmail.com,\
-                    firstname: Justus,\
-                    secondname: Voigt')
+@user_cli.command('add-user',)
 @click.option('--firstname', prompt='Firstname',)
 @click.option('--secondname', prompt='Secondname',)
 @click.option('--email', prompt='Email',)
