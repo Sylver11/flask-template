@@ -1,6 +1,6 @@
 from flask import jsonify
 
-class UserManager__Utils(object):
+class SecurityManager__Utils(object):
 
     def _prepare_create_user_args(self, **kwargs):
         """Checking if specified roles exist"""

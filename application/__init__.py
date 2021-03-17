@@ -2,8 +2,8 @@
 the application gets configured and build. """
 
 def init_extensions(app):
-    from application.extensions.user import UserManager
-    user_manager = UserManager(app)
+    from application.extensions.security import SecurityManager
+    security_manager = SecurityManager(app)
 
 
 def init_vendors(app):

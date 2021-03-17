@@ -2,30 +2,30 @@ from flask_login import LoginManager
 from flask import Blueprint
 from application.database import db
 from .models import User, Group, Role
-from .user_manager__settings import UserManager__Settings
-from .user_manager__views import UserManager__Views
-from .user_manager__utils import UserManager__Utils
+from .security_manager__settings import SecurityManager__Settings
+from .security_manager__views import SecurityManager__Views
+from .security_manager__utils import SecurityManager__Utils
 
-class UserManager(UserManager__Settings,
-        UserManager__Views,
-        UserManager__Utils):
+class SecurityManager(SecurityManager__Settings,
+        SecurityManager__Views,
+        SecurityManager__Utils):
 
     def __init__(self, app=None):
         self.app = app
         if app:
             self.init_user(app)
 
-    def init_user(self, app):
-        app.user_manager = self
+    def init_security(self, app):
+        app.manager = self
 
         self.login_manager = LoginManager(app)
-        self.login_manager.login_view = 'user_bp.login'
+        self.login_manager.login_view = 'security_bp.login'
         @self.login_manager.user_loader
         def load_user(uuid):
             return User.query.filter_by(uuid).first()
 
         blueprint = Blueprint(
-                'user_bp',
+                'security_bp',
                 __name__,
                 template_folder='templates',
                 static_folder='static',)
@@ -34,20 +34,15 @@ class UserManager(UserManager__Settings,
 
         self._add_url_routes(app)
 
-        from .cli import user_cli
-        app.cli.add_command(user_cli)
+        from .cli import security_cli
+        app.cli.add_command(security_cli)
 
         if self.USER_SET_DB_DEFAULTS:
-            group_name = self.USER_DEFAULT_GROUP_NAME
             role_name = self.USER_DEFAULT_ROLE_NAME
             role_description = self.USER_DEFAULT_ROLE_DESCRIPTION
 
             @app.before_request
-            def check_user_db_defaults():
-                group = Group.query.filter_by(name=group_name).first()
-                if not group:
-                    group = Group(name=group_name)
-                    db.session.add(group)
+            def check_security_db_defaults():
                 role = Role.query.filter_by(name=role_name).first()
                 if not role:
                     role = Role(name=role_name, description=role_description)
@@ -90,12 +85,7 @@ class UserManager(UserManager__Settings,
 
     def add_user(self, user_model):
         from sqlalchemy.exc import IntegrityError
-        name = self.USER_DEFAULT_GROUP_NAME
-        default_group = self.get_group_by_name(name)
-        if not default_group:
-            return 'No default group configured'
         try:
-            user_model.group = default_group
             new_user = db.session.add(user_model)
             db.session.commit()
         except IntegrityError as err:

@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for, request
 from application.decorators import catch_view_exception
 from .models import User
 
-class UserManager__Views(object):
+class SecurityManager__Views(object):
 
     @catch_view_exception
     def login_view(self):
