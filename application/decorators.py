@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from flask_login import current_user
-from application.extensions.user.models import User
+from application.extensions.security.models import User
 import sys, traceback
 import functools
 import logging

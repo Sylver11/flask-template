@@ -1,3 +1,3 @@
 from flask_login import current_user
-from .user_manager import UserManager
+from .security_manager import SecurityManager
 from .decorators import *

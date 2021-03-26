@@ -32,34 +32,34 @@ role_hierachy_assoc = db.Table('na_user_role_hierachy_assoc',
             primary_key=True),
         extend_existing=True)
 
-role_ability_assoc = db.Table('na_user_role_ability_assoc',
-        db.Column('id', db.Integer(), primary_key=True),
-        db.Column(
-            'role_uuid',
-            UUID,
-            db.ForeignKey('na_user_role.uuid'),
-            primary_key=True),
-        db.Column(
-            'ability_uuid',
-            UUID,
-            db.ForeignKey('na_user_role_ability.uuid'),
-            primary_key=True),
-        extend_existing=True)
+#role_ability_assoc = db.Table('na_user_role_ability_assoc',
+#        db.Column('id', db.Integer(), primary_key=True),
+#        db.Column(
+#            'role_uuid',
+#            UUID,
+#            db.ForeignKey('na_user_role.uuid'),
+#            primary_key=True),
+#        db.Column(
+#            'ability_uuid',
+#            UUID,
+#            db.ForeignKey('na_user_role_ability.uuid'),
+#            primary_key=True),
+#        extend_existing=True)
 
 
-class Ability(db.Model):
-    __tablename__ = 'na_user_role_ability'
-    __table_args__ = {'extend_existing': True}
-    uuid = db.Column(
-            UUID(),
-            primary_key=True,
-            default=uuid_ext.uuid4)
-    name = db.Column(db.String(120), unique=True)
-    created = db.Column(db.DateTime, default=datetime.utcnow)
-    updated = db.Column(db.DateTime,
-            default=datetime.utcnow,
-            onupdate=datetime.utcnow)
-
+#class Ability(db.Model):
+#    __tablename__ = 'na_user_role_ability'
+#    __table_args__ = {'extend_existing': True}
+#    uuid = db.Column(
+#            UUID(),
+#            primary_key=True,
+#            default=uuid_ext.uuid4)
+#    name = db.Column(db.String(120), unique=True)
+#    created = db.Column(db.DateTime, default=datetime.utcnow)
+#    updated = db.Column(db.DateTime,
+#            default=datetime.utcnow,
+#            onupdate=datetime.utcnow)
+#
     #def __init__(self, name):
     #    self.name = name.lower()
 
@@ -92,21 +92,21 @@ class Role(db.Model):
 #    def __init__(self, name):
 #        self.name = name.lower()
 
-    def add_abilities(self, *abilities):
-        for ability in abilities:
-            existing_ability = Ability.query.filter_by(
-                name=ability).first()
-            if not existing_ability:
-                existing_ability = Ability(ability)
-                db.session.add(existing_ability)
-                db.session.commit()
-            self.abilities.append(existing_ability)
-
-    def remove_abilities(self, *abilities):
-        for ability in abilities:
-            existing_ability = Ability.query.filter_by(name=ability).first()
-            if existing_ability and existing_ability in self.abilities:
-                self.abilities.remove(existing_ability)
+#    def add_abilities(self, *abilities):
+#        for ability in abilities:
+#            existing_ability = Ability.query.filter_by(
+#                name=ability).first()
+#            if not existing_ability:
+#                existing_ability = Ability(ability)
+#                db.session.add(existing_ability)
+#                db.session.commit()
+#            self.abilities.append(existing_ability)
+#
+#    def remove_abilities(self, *abilities):
+#        for ability in abilities:
+#            existing_ability = Ability.query.filter_by(name=ability).first()
+#            if existing_ability and existing_ability in self.abilities:
+#                self.abilities.remove(existing_ability)
 
 
 class User(db.Model):

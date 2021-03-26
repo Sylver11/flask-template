@@ -13,7 +13,7 @@ class SecurityManager(SecurityManager__Settings,
     def __init__(self, app=None):
         self.app = app
         if app:
-            self.init_user(app)
+            self.init_security(app)
 
     def init_security(self, app):
         app.manager = self
@@ -102,6 +102,16 @@ class SecurityManager(SecurityManager__Settings,
         db.session.delete(user)
         db.session.commit()
         return None
+
+    def add_group(self, group_model):
+        from sqlalchemy.exc import IntegrityError
+        try:
+            new_group = db.session.add(group_model)
+            db.session.commit()
+        except IntegrityError as err:
+            db.session.rollback()
+            return 'Group already exists'
+        return group_model
 
 
     def _add_url_routes(self, app):
