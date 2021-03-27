@@ -4,7 +4,7 @@ class SecurityManager__Settings(object):
     USER_SET_DB_DEFAULTS = True
     USER_DEFAULT_ROLE_NAME = 'user'
     USER_DEFAULT_ROLE_DESCRIPTION = 'Normal User'
-    USER_TEST_URL = '/test'
+    USER_TEST_URL = 'security/test'
     USER_LOGIN_URL = '/login'
     USER_LOGOUT_URL = '/logout'
     USER_REGISTER_URL = '/register'

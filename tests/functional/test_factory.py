@@ -7,7 +7,7 @@ def test_config():
 
 
 def test_user_route(client):
-    response = client.get('/user/test')
+    response = client.get('/security/test')
     assert response.data == b'Success'
 
 
