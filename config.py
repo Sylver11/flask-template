@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    ASSETS_DEBUG = False
+    ASSETS_DEBUG = True
     ASSETS_AUTO_BUILD = True
     SERVER_NAME = environ.get('SERVER_NAME')
     MAIL_SERVER = environ.get('MAIL_SERVER')
@@ -30,6 +30,7 @@ class Config:
 class ConfigProduction(Config):
     DEVELOPMENT = False
     DEBUG = False
+    ASSETS_DEBUG = False
 
 
 class ConfigTesting(Config):
